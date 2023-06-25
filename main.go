@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -51,7 +53,7 @@ func handlerChirspValidate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type returnVals struct {
-		Valid bool `json:"valid"`
+		Chirp string `json:"chirp"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -63,16 +65,33 @@ func handlerChirspValidate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	const maxChirpLength = 140
+	cleaned, err := validateChirp(params.Body)
 
-	if len(params.Body) > maxChirpLength {
-		respondWithError(w, http.StatusBadRequest, "Chirp is too long")
-		return
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, err.Error())
 	}
 
 	respondWithJson(w, http.StatusOK, returnVals{
-		Valid: true,
+		Chirp: cleaned,
 	})
+}
+
+func validateChirp(body string) (string, error) {
+	const maxChirpLength = 140
+
+	if len(body) > maxChirpLength {
+		return "", errors.New("chirp is too long")
+	}
+
+	badWords := map[string]struct{}{
+		"kerfuffle": {},
+		"sharbert":  {},
+		"fornax":    {},
+	}
+
+	cleaned := getCleanedBody(body, badWords)
+
+	return cleaned, nil
 }
 
 func respondWithError(w http.ResponseWriter, code int, msg string) {
@@ -101,4 +120,16 @@ func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 
 	w.WriteHeader(code)
 	w.Write(dat)
+}
+
+func getCleanedBody(body string, badWords map[string]struct{}) string {
+	words := strings.Split(body, " ")
+	for i, word := range words {
+		loweredWord := strings.ToLower(word)
+		if _, ok := badWords[loweredWord]; ok {
+			words[i] = "****"
+		}
+	}
+	cleaned := strings.Join(words, " ")
+	return cleaned
 }
