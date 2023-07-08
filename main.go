@@ -28,15 +28,15 @@ func main() {
 	}
 
 	router := chi.NewRouter()
-	fsHandler := apiCfg.middlewareMetricsInc(http.StripPrefix("/app", http.FileServer(http.Dir(filepathRoot))))
-	router.Handle("/app", fsHandler)
-	router.Handle("/app/*", fsHandler)
+	fsHandler := apiCfg.middlewareMetricsInc(http.FileServer(http.Dir(filepathRoot)))
+	router.Mount("/", fsHandler)
 
 	apiRouter := chi.NewRouter()
 	apiRouter.Get("/healthz", handlerReadiness)
 	apiRouter.Post("/chirps", apiCfg.handlerChirpsCreate)
 	apiRouter.Get("/chirps", apiCfg.handlerChirpsRetrieve)
 	apiRouter.Get("/chirps/{chirpID}", apiCfg.handlerChirpsGet)
+	apiRouter.Post("/users", apiCfg.handlerUsersCreate)
 	router.Mount("/api", apiRouter)
 
 	adminRouter := chi.NewRouter()

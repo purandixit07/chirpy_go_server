@@ -16,11 +16,7 @@ type DB struct {
 
 type DBstructure struct {
 	Chirps map[int]Chirp `json:"chirps"`
-}
-
-type Chirp struct {
-	ID   int    `json:"id"`
-	Body string `json:"body"`
+	Users  map[int]User  `json:"users"`
 }
 
 func NewDB(path string) (*DB, error) {
@@ -33,6 +29,14 @@ func NewDB(path string) (*DB, error) {
 	return db, err
 }
 
+func (db *DB) createDB() error {
+	dbStructure := DBstructure{
+		Chirps: map[int]Chirp{},
+		Users:  map[int]User{},
+	}
+	return db.writeDB(dbStructure)
+}
+
 func (db *DB) ensureDB() error {
 	_, err := os.ReadFile(db.path)
 	if errors.Is(err, os.ErrNotExist) {
@@ -40,13 +44,6 @@ func (db *DB) ensureDB() error {
 	}
 
 	return err
-}
-
-func (db *DB) createDB() error {
-	dbStructure := DBstructure{
-		Chirps: map[int]Chirp{},
-	}
-	return db.writeDB(dbStructure)
 }
 
 func (db *DB) writeDB(dbStructure DBstructure) error {

@@ -43,10 +43,6 @@ func (cfg *apiConfig) handlerChirpsCreate(w http.ResponseWriter, r *http.Request
 		Body: chirp.Body,
 	})
 
-	if err != nil {
-		respondWithError(w, http.StatusBadRequest, err.Error())
-	}
-
 }
 
 func validateChirp(body string) (string, error) {

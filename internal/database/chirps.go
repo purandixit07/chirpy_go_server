@@ -1,5 +1,10 @@
 package database
 
+type Chirp struct {
+	ID   int    `json:"id"`
+	Body string `json:"body"`
+}
+
 func (db *DB) GetChirp(id int) (Chirp, error) {
 	dbStructure, err := db.loadDB()
 
