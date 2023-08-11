@@ -31,14 +31,26 @@ func (cfg *apiConfig) handlerChirpsGet(w http.ResponseWriter, r *http.Request) {
 
 func (cfg *apiConfig) handlerChirpsRetrieve(w http.ResponseWriter, r *http.Request) {
 	dbChirps, err := cfg.DB.GetChirps()
-
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "can't retrieve chirps")
+	}
+
+	authorID := -1
+	authorIDString := r.URL.Query().Get("author_id")
+	if authorIDString != "" {
+		authorID, err = strconv.Atoi(authorIDString)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, "Invalid author ID")
+			return
+		}
 	}
 
 	chirps := []Chirp{}
 
 	for _, chirp := range dbChirps {
+		if authorID != -1 && chirp.Author_Id != authorID {
+			continue
+		}
 		chirps = append(chirps, Chirp{
 			ID:        chirp.ID,
 			Body:      chirp.Body,
