@@ -4,6 +4,7 @@ type Chirp struct {
 	ID        int    `json:"id"`
 	Body      string `json:"body"`
 	Author_Id int    `json:"author_id"`
+	Sort      string `json:"sort"`
 }
 
 func (db *DB) GetChirp(id int) (Chirp, error) {
